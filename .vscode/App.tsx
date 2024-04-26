@@ -7,8 +7,6 @@ import { createStackNavigator } from '@react-navigation/stack';
 import GlobalStyles from './styles'; 
 import Home from './screens/Home/Home';
 import Login from './screens/Login/Login';
-import MainJuntin from './screens/MainJuntin/MainJuntin';
-
 
 const Stack = createStackNavigator();
 
@@ -20,10 +18,10 @@ const App = () => {
         <Stack.Navigator screenOptions={{
             headerStyle: { elevation: 0 },
             cardStyle: { backgroundColor: GlobalStyles.container.backgroundColor},
+      
         }}>
           <Stack.Screen name="Login" component={Login} options={{ headerShown: false }}/>
-          <Stack.Screen name="Home"  component={Home}  />
-          <Stack.Screen name="MainJuntin"  component={MainJuntin}  />
+          <Stack.Screen name="Home" component={Home}  />
         </Stack.Navigator>
       </NavigationContainer>
      
