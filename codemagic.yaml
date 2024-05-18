@@ -16,9 +16,8 @@ workflows:
           cd ..
       - name: Build iOS
         script: |
-          xcodebuild -workspace ios/juntin.xcworkspace -scheme juntin -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/ios/juntin.xcarchive
-          xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/ios/juntin.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $CM_BUILD_DIR/ios
-    artifacts:
+         xcodebuild -workspace ios/juntin.xcworkspace -scheme juntin -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/ios/juntin.xcarchive
+         xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/ios/juntin.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $CM_BUILD_DIR/ios    artifacts:
       - $CM_BUILD_DIR/ios/*.ipa
     publishing:
       email:
