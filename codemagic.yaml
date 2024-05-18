@@ -1,24 +1,21 @@
 workflows:
-  react-native-workflow:
-    name: React Native Workflow
-    max_build_duration: 60
+  react-native:
+    name: React Native Build
     environment:
+      react-native:
+        version: 0.73.6 # Substitua pela versão do React Native que você está usando
       vars:
-        EXPO_NO_DETOX: true
-      node: 16
-      xcode: latest
+        NODE_ENV: "production"
     scripts:
       - name: Install dependencies
-        script: |
-          npm install
-          cd ios
-          pod install
-          cd ..
-      - name: Build iOS
-        script: |
-         xcodebuild -workspace ios/juntin.xcworkspace -scheme juntin -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/ios/juntin.xcarchive
-         xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/ios/juntin.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $CM_BUILD_DIR/ios    artifacts:
-      - $CM_BUILD_DIR/ios/*.ipa
+        script: npm install
+      - name: Run Android build
+        script: cd android && ./gradlew assembleRelease
+      - name: Run iOS build
+        script: xcodebuild -workspace ios/juntin.xcworkspace -scheme juntin -configuration Release -sdk iphoneos archive -archivePath $PWD/build/juntin.xcarchive
+    artifacts:
+      - build/outputs/**/*.apk
+      - build/juntin.xcarchive
     publishing:
       email:
         recipients:
