@@ -12,12 +12,9 @@ interface MovieProps {
     urlImage:string;
     description:string;
     checked: boolean;
-    position: number;
-    removeMovies: (position:number) => void;
 }
 
 const MovieCard: React.FC<MovieProps> = (card: MovieProps) => {
-    const [isChecked, setIsChecked] = useState(card.checked);
     const styles = StyleSheet.create({
         movieCard: {
             flexDirection: 'row',
@@ -37,7 +34,7 @@ const MovieCard: React.FC<MovieProps> = (card: MovieProps) => {
            alignItems:'flex-start',
            justifyContent:'flex-start',
            flex: 1,
-           gap:5,
+           gap:20,
            height:'100%',
         },
         cardName: {
@@ -53,34 +50,16 @@ const MovieCard: React.FC<MovieProps> = (card: MovieProps) => {
            justifyContent: 'flex-start', 
         },
         image: {
-            width: 130,
-            height: 195,
+            width: 120,
+            height: 180,
             objectFit:'contain'
         },
         description:{
             color: card.textColor,
             flexShrink: 1,
             
-        },
-        headerInfo:{
-            flexDirection: 'row',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            width: '100%',
-            paddingHorizontal: 10,
         }
     });
-
-
-    async function changeIsChecked(newValue:boolean){
-       setIsChecked(newValue);
-      const result =  await JuntinMovieService.changeView(card.id, newValue);
-        
-      if(result.isWatchedEveryone){
-            card.removeMovies(card.position);
-        }
-
-    }
 
     const description = card.description.length > 100 
         ? `${card.description.substring(0, 100)}...` 
@@ -97,21 +76,9 @@ const MovieCard: React.FC<MovieProps> = (card: MovieProps) => {
               <Image source={{uri:card.urlImage}} style={styles.image} />
             </View>
             <View style={styles.info}>
-                <View style={styles.headerInfo}>
-                    <Text>Viewed</Text>
-                <Switch 
-    value={isChecked} 
-    onValueChange={(newValue) => {
-        changeIsChecked(newValue);
-    }} 
-/>
-
-                </View>
-   
             <Text style={styles.cardName}>{card.name}</Text>
             <Text style={styles.ownerName}>{card.ownerName}</Text>
             <Text style={styles.description}>{description}</Text>
-  
             </View>
         </LinearGradient>
     );

@@ -1,20 +1,16 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { MovieResultProps } from '../../../interfaces/MovieResult/MovieResultProps';
 
-interface MovieResultProps {
-  id: number;
-  title: string;
-  imageUrl: string;
-  onAddToPlaylist: () => void;
-}
 
-const MovieResult: React.FC<MovieResultProps> = ({ id, title, imageUrl, onAddToPlaylist }) => {
+const MovieResult: React.FC<MovieResultProps> = ({ id, title, urlImage, description, tmdbId, onAddToPlaylist }) => {
+
   return (
-    <TouchableOpacity style={styles.container} onPress={onAddToPlaylist}>
-      <Image source={{ uri: imageUrl }} style={styles.image} />
+    <TouchableOpacity style={styles.container}>
+      <Image source={{ uri: urlImage }} style={styles.image} />
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.addButton} onPress={onAddToPlaylist}>Adicionar</Text>
+        <Text style={styles.addButton} onPress={onAddToPlaylist}>Add</Text>
       </View>
     </TouchableOpacity>
   );
@@ -38,10 +34,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 10
   },
   title: {
     flex: 1,
-    fontSize: 18,
+    fontSize: 16,
   },
   addButton: {
     fontSize: 16,

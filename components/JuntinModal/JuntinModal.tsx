@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from 'react-native';
+import { Juntin } from '../../interfaces/Juntin/Juntin';
+import JuntinService from '../../services/JuntinService';
+import { Picker } from '@react-native-picker/picker';
+import { ColorPicker } from '../ColorPicker/ColorPicker';
+import { TextColorPicker } from '../TextColorPicker/TextColorPicker';
+const JuntinModal = ({ isVisible, onClose, editing = false, juntin, onRefresh }: { isVisible: boolean, onClose: () => void, editing?: boolean, juntin?: Juntin, onRefresh: () => void },) => {
+  const [juntinData, setJuntinData] = useState(juntin || {} as Juntin);
 
-const AddJuntinModal = ({ isVisible, onClose }) => {
-  const [juntinData, setJuntinData] = useState({
-    nome: '',
-    cor: '',
-    categoria: ''
-  });
+  const [title, setTitle] = useState(editing ? 'Update' : 'Add');
 
-  const handleAddJuntin = () => {
-    // Aqui você pode fazer algo com os dados do juntin, por exemplo, enviá-los para algum lugar ou fazer alguma ação com eles.
-    console.log('Dados do Juntin:', juntinData);
-    // Você pode adicionar mais lógica aqui, como redefinir os campos, etc.
-    onClose(); // Fechando o modal após adicionar o juntin
+  const handleAddJuntin = async () => {
+    if (juntinData.id) {
+      await JuntinService.updateJuntin(juntinData);
+    } else {
+      await JuntinService.createJuntin(juntinData);
+
+    }
+    onRefresh();
+    onClose();
   };
 
   return (
@@ -24,39 +30,60 @@ const AddJuntinModal = ({ isVisible, onClose }) => {
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Adicionar Juntin</Text>
-      
-          <TextInput
-            style={styles.input}
-            placeholder="Nome do Juntin"
-            value={juntinData.nome}
-            onChangeText={text => setJuntinData({ ...juntinData, nome: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Cor"
-            value={juntinData.cor}
-            onChangeText={text => setJuntinData({ ...juntinData, cor: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Categoria"
-            value={juntinData.categoria}
-            onChangeText={text => setJuntinData({ ...juntinData, categoria: text })}
-          />
+          <Text style={styles.modalTitle}>{title} Juntin</Text>
+          <View style={styles.containerInput}>
+            <Text>Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="your favorite name"
+              value={juntinData.name}
+              onChangeText={text => setJuntinData({ ...juntinData, name: text })}
+            />
+          </View>
+          <View style={styles.containerInput}>
+            <Text>Color</Text>
+            <View style={styles.input}>
+              <ColorPicker
+                selectedColor={juntinData.color}
+                onColorSelect={(color: string) => setJuntinData({ ...juntinData, color })}
+              />
+            </View>
+          </View>
+          <View style={styles.containerInput}>
+            <Text>Text Color</Text>
+            <View style={styles.input}>
+              <TextColorPicker
+                selectedColor={juntinData.textColor}
+                onColorSelect={(textColor: string) => setJuntinData({ ...juntinData, textColor })}
+              />
+            </View>
+          </View>
+          <View style={styles.containerInput}>
+            <Text>Category</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="terror, action, etc."
+              value={juntinData.category}
+              onChangeText={text => setJuntinData({ ...juntinData, category: text })}
+            />
+          </View>
           <TouchableOpacity style={styles.addButton} onPress={handleAddJuntin}>
-            <Text style={styles.addButtonText}>Adicionar</Text>
+            <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Fechar</Text>
+            <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
       </View>
     </Modal>
   );
 };
-
 const styles = StyleSheet.create({
+  containerInput: {
+    width: '100%',
+    gap: 10,
+
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -69,7 +96,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     elevation: 5,
-    width: '90%', // Ajuste para ocupar 90% da largura total
+    width: '90%',
   },
   modalTitle: {
     fontSize: 20,
@@ -110,4 +137,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddJuntinModal;
+export default JuntinModal;

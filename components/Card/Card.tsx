@@ -2,120 +2,113 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Modal } from 'react-native';
 import GlobalStyles from '../../styles';
 import { useNavigation } from '@react-navigation/native';
+import { Juntin } from '../../interfaces/Juntin/Juntin';
+import MenuJuntin from '../MenuJuntin/MenuJuntin';
+import JuntinModal from '../JuntinModal/JuntinModal';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootParamList } from '../../interfaces/RoutesRootParam/RootParamList';
 
-interface CardProps {
-  id: string;
-  name: string;
-  color: string;
-  ownerName: string;
-  category: string;
-  peopleCount: number;
-  moviesCount: number;
-}
-
-const Card: React.FC<CardProps> = (card: CardProps) => {
-  const navigation = useNavigation();
-  const [modalVisible, setModalVisible] = useState(false);
+const Card: React.FC<{ card: Juntin, onRefresh: () => void }> = ({ card, onRefresh }) => {
+  type NavigationProp = StackNavigationProp<RootParamList>;
+  const navigation = useNavigation<NavigationProp>();
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleJuntin = () => {
-    navigation.navigate('MainJuntin', { cardData: card });
+    navigation.navigate('MoviesScreen', { card: card });
   };
 
-  const handleEdit = () => {
+  const handleMenuJuntin = () => {
+    setIsMenuVisible(true);
+  }
+  const openEditJuntin = () => {
+    setIsModalVisible(true);
+  }
+  const closeMenu = () => {
+    setIsMenuVisible(false);
+  }
 
-    setModalVisible(false); 
+  const closeModal = () => {
+    setIsModalVisible(false);
   };
-
-  const handleDelete = () => {
-    
-    setModalVisible(false); 
-  };
+  
 
   return (
     <TouchableOpacity onPress={handleJuntin}>
-    
-      
       <View style={[styles.card, { backgroundColor: card.color }]}>
-     
-        <View style={styles.imageContainer}>
-          {/* Imagem ocupando a altura toda a esquerda */}
-          <Image source={require('../../assets/imgs/terror.png')} style={styles.image} />
-        </View>
-        
-        <View style={styles.middleContent}>
-          {/* Nome e categoria no meio ocupando toda a altura do card */}
-          <Text style={styles.textJuntinName} numberOfLines={2}>{card.name}</Text>
-          <Text style={styles.text} numberOfLines={1}>{card.category}</Text>
-          <View style={styles.infoContainer}>
-            {/* Informações de pessoas e filmes */}
-            <View style={styles.info}>
-              <Text style={styles.infoTextValue}>{card.peopleCount || 0}</Text>
-              <Text style={styles.infoText}>People(s)</Text>
-            </View>
-            <View style={styles.info}>
-              <Text style={styles.infoTextValue}>{card.moviesCount || 0}</Text>
-              <Text style={styles.infoText}>Movie(s)</Text>
-            </View>
-          </View>
-        </View>
-        <View style={styles.cardBottom}>
+
         <View style={styles.header}>
-        
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          {/* Botão de três pontos */}
-          <Text style={styles.moreButton}>...</Text>
-        </TouchableOpacity>
-        
-         </View>
-          {/* Owner na direita ocupando a altura do card inteira */}
-          <Text style={styles.textOwner}>{card.ownerName}</Text>
+          <TouchableOpacity onPress={() => handleMenuJuntin()}>
+            <Text style={[styles.moreButton, { color: card.textColor }]}>...</Text>
+          </TouchableOpacity>
         </View>
-    
 
-
-        <View style={styles.blackBalloon} />
-        <View style={styles.grayBalloon} />
-        {/* Modal para editar/excluir */}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <TouchableOpacity onPress={handleEdit}>
-                <Text style={styles.modalOption}>Editar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleDelete}>
-                <Text style={styles.modalOption}>Excluir</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={styles.modalOption}>Cancelar</Text>
-              </TouchableOpacity>
+        <View style={styles.middleContent}>
+          <View style={styles.headerContent}>
+          <Text style={[styles.textJuntinName, { color: card.textColor  }]} numberOfLines={2}>{card.name}</Text>
+          <Text style={[styles.text, { color: card.textColor  }]} numberOfLines={1}>{card.category}</Text>
+          </View>
+     
+          <View style={styles.infoContainer}>
+            <View style={styles.info}>
+              <Text style={[styles.infoTextValue, { color: card.textColor  }]}>{card.peopleCount || 0}</Text>
+              <Text style={[styles.infoText, { color: card.textColor  }]}>People(s)</Text>
+            </View>
+            <View style={styles.info}>
+              <Text style={[styles.infoTextValue, { color: card.textColor  }]}>{card.moviesCount || 0}</Text>
+              <Text style={[styles.infoText, { color: card.textColor  }]}>Movie(s)</Text>
             </View>
           </View>
-        </Modal>
+        </View>
+
+        <View style={styles.cardBottom}>
+          <Text style={[styles.textOwner, { color: card.textColor  }]}>{card.ownerName}</Text>
+        </View>
+
+        <View style={[styles.blackBalloon, {backgroundColor:card.textColor}]} />
+        <View style={[styles.grayBalloon, {backgroundColor:card.textColor}]} />
       </View>
+
+      <MenuJuntin isVisible={isMenuVisible} onRefresh={onRefresh} onClose={closeMenu} openEditJuntin={openEditJuntin} juntin={card} />
+      <JuntinModal isVisible={isModalVisible} onClose={closeModal} editing={true} juntin={card} onRefresh={onRefresh} />
     </TouchableOpacity>
   );
-}
+};
+
+
 
 const styles = StyleSheet.create({
-  header:{
- 
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 10,
   },
   card: {
     width: '100%',
-    padding: 20,
+    padding: 5,
     margin: 10,
-    borderRadius: 20,
-    flexDirection: 'row',
-    overflow: 'hidden'
-  },
-  imageContainer: {
-    marginRight: 10,
-    flex: 1,
+    borderRadius: 15,
+    flexDirection: 'column',
+    overflow: 'hidden',
+    color: '#ffffff',
+    shadowColor: "#000",
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+    shadowOffset: {
+        width: 0,
+        height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+},
+
+  headerContent:{
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    padding: 10,
   },
   image: {
     width: 50,
@@ -130,6 +123,7 @@ const styles = StyleSheet.create({
   infoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
     paddingTop: 5
   },
   info: {
@@ -141,7 +135,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontSize: 13,
     fontFamily: 'RobotoMono-Regular',
-    color: GlobalStyles.container.secondaryColor,
+    
   },
   cardBottom: {
     flex: 2,
@@ -151,21 +145,17 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 12,
     fontFamily: 'RobotoMono-Regular',
-    color: 'red',
     opacity: 0.8,
     maxWidth: '100%',
   },
   textJuntinName: {
     fontSize: 18,
-    color: GlobalStyles.container.secondaryColor,
   },
   textOwner: {
     fontFamily: 'RobotoMono-Italic',
     fontSize: 16,
-    color: GlobalStyles.container.secondaryColor,
   },
   infoTextValue: {
-    color: 'red',
   },
   grayBalloon: {
     zIndex: -2,
@@ -174,9 +164,8 @@ const styles = StyleSheet.create({
     right: -70,
     width: 150,
     height: 150,
-    backgroundColor: 'black',
     borderRadius: 100,
-    opacity: 0.3,
+    opacity: 0.05,
     shadowColor: 'black',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -187,11 +176,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -40,
     left: -100,
-    width: 200,
-    height: 200,
-    backgroundColor: 'black',
+    width: 150,
+    height: 150,
     borderRadius: 150,
-    opacity: 0.1,
+    opacity: 0.05,
     shadowColor: 'black',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.8,
@@ -199,7 +187,7 @@ const styles = StyleSheet.create({
   },
   moreButton: {
     fontSize: 24,
-    color: '#fff',
+  
   },
   modalContainer: {
     flex: 1,

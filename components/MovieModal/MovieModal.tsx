@@ -1,92 +1,101 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, Text, Button, TextInput, StyleSheet, Modal, ScrollView, Alert } from 'react-native';
 import { MovieResultProps, } from './MovieResult/MovieResult';
 import MovieResult from './MovieResult/MovieResult';
+import MovieService from '../../services/MovieService';
+import { MovieResponse } from '../../interfaces/Movie/MovieResponse';
+import { Juntin } from '../../interfaces/Juntin/Juntin';
+import { CardDataContext } from '../../context/CardDataContext';
+import AddMovieModal from './AddMovieModal/AddMovieModal';
 
 interface AddMovieModalProps {
   isVisible: boolean;
   onClose: () => void;
   onSearch: (movieName: string) => void;
+  onRefresh: () => void;
+  juntin: Juntin;
 }
 
-const AddMovieModal: React.FC<AddMovieModalProps> = ({ isVisible, onClose, onSearch }) => {
+const MovieModal: React.FC<AddMovieModalProps> = ({ isVisible, onClose, onSearch, onRefresh }) => {
   const [movieName, setMovieName] = useState<string>('');
   const [searchResults, setSearchResults] = useState<MovieResultProps[]>([]);
+  const [selectedMovie, setSelectedMovie] = useState<MovieResultProps | null>(null);
+  const [isVisibleAddMovie, setIsVisibleAddMovie] = useState<boolean>(false);
 
   const handleSearch = () => {
-
-    console.log('Buscar filme:', movieName);
     fetchMoviesFromAPI();
-
   };
 
 
   const fetchMoviesFromAPI = async () => {
-    try {
-      const apiKey = '8320a0a15131fba8571c70671d04e1f3';
-      const options = {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4MzIwYTBhMTUxMzFmYmE4NTcxYzcwNjcxZDA0ZTFmMyIsInN1YiI6IjY2MTgwODlhN2UxMmYwMDEzMGYxMzhjMCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.0rouW1pbsvkeaTjIM6e01ZrwxHs6vdJIQ6fHuWI3Evs'
-        }
-      };
-      const url = `https://api.themoviedb.org/3/search/movie?query=${movieName}&include_adult=false&language=en-US&page=1`;
+      const movies = await MovieService.getMovies(movieName);
+      const search = movies.map((movie: MovieResponse) => {
+     
+      return {
+          title: movie.title,
+          urlImage: movie.urlImage,
+          description: movie.description,
+          tmdbId: movie.tmdbId,
+      } as MovieResultProps;
+      });
+      
+      setSearchResults(search);
 
-      const response = await fetch(url, options);
-      if (!response.ok) {
-        throw new Error('Erro ao buscar filmes');
-      }
-      const data = await response.json();
-      setSearchResults(data.results.map((movie: any) => ({
-        id: movie.id,
-        title: movie.original_title,
-        imageUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500/${movie.poster_path}` : ''
-      })));
-
-    } catch (error) {
-      console.error('Erro ao buscar filmes:', error);
-      Alert.alert('Erro', 'Ocorreu um erro ao buscar os filmes. Por favor, tente novamente mais tarde.');
-
-    }
+    
   };
-  const addToPlaylist = (id: number, title: string) => {
 
-    console.log(`Filme adicionado à playlist: ${title}`);
+  const addToJuntin = (movie:MovieResultProps) => {
+    setSelectedMovie(movie);
+    setIsVisibleAddMovie(true);
   };
-  
+
   return (
     <Modal visible={isVisible} animationType="slide" transparent>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Adicionar Filme</Text>
+          <Text style={styles.modalTitle}>Add Movie</Text>
           <TextInput
             style={styles.input}
-            placeholder="Digite o nome do filme"
+            placeholder="Enter the name of the movie"
             value={movieName}
             onChangeText={setMovieName}
           />
-          <Button title="Buscar" onPress={handleSearch} />
+          <Button color='#ff4d4d' title="Search" onPress={handleSearch} />
           <ScrollView style={styles.scrollView}>
             {searchResults.map((result, index) => (
               <MovieResult
                 key={index}
-                id={result.id}
                 title={result.title}
-                imageUrl={result.imageUrl}
-                onAddToPlaylist={() => addToPlaylist(result.id, result.title)}
+                urlImage={result.urlImage}
+                description={result.description}
+                tmdbId={result.tmdbId}
+                onAddToPlaylist={() => addToJuntin(result)}
               />
+              
             ))}
           </ScrollView>
 
-          <Button title="Fechar" onPress={onClose} />
+          <Button color='#222' title="Close" onPress={onClose} />
         </View>
       </View>
+      {selectedMovie && 
+      <AddMovieModal isVisible={isVisibleAddMovie} 
+      movieResult={selectedMovie} 
+      onRefresh={onRefresh}
+      onClose={()=>{setIsVisibleAddMovie(false); 
+      setSelectedMovie(null);}
+      } />}
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  search:{
+
+  },
+  close:{
+
+  },
   modalContainer: {
     width: '100%',
     padding: 10,
@@ -114,8 +123,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   scrollView: {
-    maxHeight: 200,
+    maxHeight: 400,
   },
 });
 
-export default AddMovieModal;
+export default MovieModal;

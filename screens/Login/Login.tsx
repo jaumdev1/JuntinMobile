@@ -1,22 +1,46 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import GlobalStyles from '../../styles'; 
 import { SvgUri, SvgXml } from 'react-native-svg';
+import {AuthenticationService} from '../../services/AuthenticationService';
+import apiCall from '../../services/api';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootParamList } from '../../interfaces/RoutesRootParam/RootParamList';
+import * as yup from 'yup';
+
+const schema = yup.object().shape({
+  login: yup.string().required('Username is required'),
+  password: yup.string().required('Password is required'),
+});
+
+
 
 const Login = () => {
-  const navigation = useNavigation();
+  type NavigationProp = StackNavigationProp<RootParamList>;
+  const navigation = useNavigation<NavigationProp>();
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleSignIn = () => {
-    // Lógica para autenticação do usuário
-    navigation.navigate('Home' as never);
+  
+  const handleSignIn = async () => {
+    try {
+      await schema.validate({ login, password });
+
+      let authenticate = new AuthenticationService(apiCall);
+      const isAuthenticated = await authenticate.authenticate(login, password);
+      
+      if (isAuthenticated) {
+        navigation.navigate('Home' as never);
+      }
+    } catch (error:any) {
+      Alert.alert('Error', error.message);
+    }
+   
   };
 
   const handleSignUp = () => {
-    // Navegar para a tela de registro
-    // navigation.navigate('SignUp');
+    navigation.navigate('Register');
   };
 
   return (
@@ -91,9 +115,9 @@ const styles = StyleSheet.create({
     height: 40,
     padding:10,
     borderWidth: 0.1, 
-    borderColor:'rgba(1,1, 1, 0.8)',
+    borderColor:'rgba(1,1, 1, 0.5)',
     backgroundColor: 'rgba(200,200, 200, 0.1)',
-    borderRadius: 2,
+    borderRadius: 20,
     paddingHorizontal:20,
   },
  
@@ -101,6 +125,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FAF6F0', 
     fontFamily: 'RobotoMono-SemiBold',
+    
   },
   title: {
     fontFamily: 'RobotoMono-Regular',
@@ -115,7 +140,7 @@ const styles = StyleSheet.create({
     borderRadius: 50, 
     paddingVertical: 12,
     paddingHorizontal:  100,
-    marginTop:30
+    marginTop:30,
 
   },
   signUpButton: {
@@ -126,6 +151,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: GlobalStyles.container.primaryColor,
     fontFamily: 'RobotoMono-Regular',
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   subtitle: {
     fontSize: 18,
@@ -153,8 +186,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: -280, 
     right:90,
-    width: 150,
-    height: 150,
+    width: 200,
+    height: 200,
     backgroundColor: 'black',
     borderRadius: 100,
     opacity: 0.8,

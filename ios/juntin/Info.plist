@@ -64,5 +64,14 @@
 		<string>RobotoMono-Thin.ttf</string>
 		<string>RobotoMono-ThinItalic.ttf</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>juntinplay</string>
+        </array>
+    </dict>
+</array>
 </dict>
 </plist>

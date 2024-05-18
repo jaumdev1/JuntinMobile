@@ -1,35 +1,16 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from 'react-native';
 import Card from '../../components/Card/Card';
-import AddJuntinModal from '../../components/JuntinModal/JuntinModal';
+import JuntinModal from '../../components/JuntinModal/JuntinModal';
+import JuntinService from '../../services/JuntinService';
+import { Juntin } from '../../interfaces/Juntin/Juntin';
+import MenuJuntin from '../../components/MenuJuntin/MenuJuntin';
 
 const Home = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const playlists = [
-    {
-      id:"DASD2323HJFGS#3231",
-      nameJuntin: "Filmesmeuamigos",
-      color: "#222",
-      owner: "joao",
-      category: "terror"
-    },
-    {
-      id:"DASD2323HJFGS#3231",
-      nameJuntin: "OutraPlaylist",
-      color: "#222",
-      owner: "outroDono",
-      category: "comédia"
-    },
-    {
-      id:"DASD2323HJFGS#3231",
-      nameJuntin: "MaisUmaPlaylist",
-      color: "#222",
-      owner: "outroDono",
-      category: "ação"
-    },
-    
-   
-  ];
+  const [juntins, setJuntins] = useState([]as Juntin[]);
+  const [refreshing, setRefreshing] = useState(false);
+
   const handleAddJuntin = () => {
     setIsModalVisible(true);
   };
@@ -37,35 +18,52 @@ const Home = () => {
   const closeModal = () => {
     setIsModalVisible(false);
   };
+  const onRefresh = () => {
+    fetchJuntins();
+  };
+  const fetchJuntins = async () => {
+    setRefreshing(true);
+    const juntins = await JuntinService.getJuntins(1);
+    setJuntins(juntins);
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    fetchJuntins();
+  }, []);
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddJuntin}>
-          <Text style={styles.buttonText}>Adicionar Juntin</Text>
-        </TouchableOpacity>
-      </View>
-      </View>
-       <View style={styles.content}>
-      <Text style={styles.subtitle}>Your Juntin's</Text>
-      {playlists.map((playlist, index) => (
-        <Card
-          key={index}
-          id={playlist.id}
-          name={playlist.nameJuntin}
-          color={playlist.color}
-          ownerName={playlist.owner}
-          category={playlist.category}
-          peopleCount = {5}
-          moviesCount = {30}
-        />
-      ))}
-      </View>
-      <AddJuntinModal isVisible={isModalVisible} onClose={closeModal} />
+      <ScrollView
+        contentContainerStyle={styles.scrollView}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={fetchJuntins}
+          />
+        }
+      >
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.addButton} onPress={handleAddJuntin}>
+            <Text style={styles.buttonText}>Add Juntin</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.content}>
+          <Text style={styles.subtitle}>Your Juntin's</Text>
+          {juntins.map((playlist, index) => (
+            <Card
+              key={index}
+              card={playlist}
+              onRefresh={onRefresh}
+            />
+          ))}
+        </View>
+        <JuntinModal isVisible={isModalVisible} onRefresh={onRefresh} onClose={closeModal} />
+      </ScrollView>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   header:{
@@ -92,7 +90,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   container: {
-    padding:10,
+    
   },
   title: {
     fontSize: 24,
@@ -102,6 +100,9 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 18,
   },
+  scrollView:{
+    padding:10,
+  }
 });
 
 export default Home;
