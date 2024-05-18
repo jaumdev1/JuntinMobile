@@ -1,0 +1,26 @@
+workflows:
+  react-native-workflow:
+    name: React Native Workflow
+    max_build_duration: 60
+    environment:
+      vars:
+        EXPO_NO_DETOX: true
+      node: 16
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+          cd ios
+          pod install
+          cd ..
+      - name: Build iOS
+        script: |
+          xcodebuild -workspace ios/Juntin.xcworkspace -scheme Juntin -sdk iphoneos -configuration Release archive -archivePath $CM_BUILD_DIR/ios/Juntin.xcarchive
+          xcodebuild -exportArchive -archivePath $CM_BUILD_DIR/ios/Juntin.xcarchive -exportOptionsPlist ios/exportOptions.plist -exportPath $CM_BUILD_DIR/ios
+    artifacts:
+      - $CM_BUILD_DIR/ios/*.ipa
+    publishing:
+      email:
+        recipients:
+          - antoniojoaossh@gmail.com
